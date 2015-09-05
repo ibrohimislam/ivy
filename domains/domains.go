@@ -18,14 +18,15 @@ type MetaData struct {
 }
 
 type User struct {
-	Id      string `json:"id"`
-	Name    string `json:"name"`
-	IsAdmin bool   `json:"isAdmin"`
+	Id            string `json:"id"`
+	Name          string `json:"name"`
+	IsAdmin       bool   `json:"isAdmin"`
+	DepartementId string `json:"departementId"`
 }
 
 type Entity struct {
-	Id       string
-	DataSet  []Data     `json:"dataSet"`
-	MetaData []MetaData `json:"metaData"`
-	OwnerId  string     `json:"user"`
+	Id            string     `json:"id"`
+	DataSet       []Data     `json:"dataSet"`
+	MetaData      []MetaData `json:"metaData"`
+	DepartementId string     `json:"departementId"`
 }

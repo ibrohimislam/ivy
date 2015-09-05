@@ -1,29 +1,33 @@
 package interfaces
 
 import (
+	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
-	"strconv"
-	"usecases"
+
+	"github.com/ibrohimislam/ivy/domains"
+	"github.com/ibrohimislam/ivy/usecases"
 )
 
-type OrderInteractor interface {
-	Items(userId, orderId int) ([]usecases.Item, error)
-	Add(userId, orderId, itemId int) error
+type DataInteractor interface {
+	Entity(userId, entityId string) (*domains.Entity, error)
+	PutEntity(userId string, dataSet []domains.Data, metaData []domains.MetaData)
 }
 
 type WebserviceHandler struct {
-	OrderInteractor OrderInteractor
+	dataInteractor usecases.DataInteractor
 }
 
-func (handler WebserviceHandler) ShowOrder(res http.ResponseWriter, req *http.Request) {
-	userId, _ := strconv.Atoi(req.FormValue("userId"))
-	orderId, _ := strconv.Atoi(req.FormValue("orderId"))
-	items, _ := handler.OrderInteractor.Items(userId, orderId)
-	for _, item := range items {
-		io.WriteString(res, fmt.Sprintf("item id: %d\n", item.Id))
-		io.WriteString(res, fmt.Sprintf("item name: %v\n", item.Name))
-		io.WriteString(res, fmt.Sprintf("item value: %f\n", item.Value))
-	}
+func NewWebserviceHandler(dataInteractor usecases.DataInteractor) *WebserviceHandler {
+	return &WebserviceHandler{dataInteractor: dataInteractor}
+}
+
+func (handler WebserviceHandler) ReadData(res http.ResponseWriter, req *http.Request) {
+	userId := req.FormValue("userId")
+	entityId := req.FormValue("entityId")
+
+	entity, _ := handler.dataInteractor.Entity(userId, entityId)
+	entityMarshal, _ := json.Marshal(entity)
+
+	fmt.Fprintln(res, entityMarshal)
 }

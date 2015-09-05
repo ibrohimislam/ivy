@@ -9,13 +9,6 @@ import (
 	"github.com/ibrohimislam/ivy/domains"
 )
 
-type Entity struct {
-	Id       string
-	DataSet  []domains.Data
-	MetaData []domains.MetaData
-	OwnerId  string
-}
-
 type Logger interface {
 	Log(message string) error
 }
@@ -30,22 +23,23 @@ func NewDataInteractor(userRepository domains.UserRepository, dataRepository dom
 	return &DataInteractor{userRepository: userRepository, dataRepository: dataRepository, logger: logger}
 }
 
-func (interactor *DataInteractor) Entity(userId, entityId string) (*Entity, error) {
+func (interactor *DataInteractor) Entity(userId, entityId string) (*domains.Entity, error) {
 	user := interactor.userRepository.FindById(userId)
 	entity := interactor.dataRepository.FindById(entityId)
 
-	if user.Id != entity.Id {
+	if user.DepartementId != entity.DepartementId {
 		message := "User #%i is not allowed to see items entity #%i"
 		err := fmt.Errorf(message, user.Id, entity.Id)
 		interactor.logger.Log(err.Error())
-		return &Entity{}, err
+		return &domains.Entity{}, err
 	}
 
-	return &Entity{entity.Id, entity.DataSet, entity.MetaData, entity.OwnerId}, nil
+	return &domains.Entity{entity.Id, entity.DataSet, entity.MetaData, entity.DepartementId}, nil
 }
 
 func (interactor *DataInteractor) PutEntity(userId string, dataSet []domains.Data, metaData []domains.MetaData) {
-	err := interactor.dataRepository.Store(domains.Entity{interactor.getSlug(), dataSet, metaData, userId})
+	user := interactor.userRepository.FindById(userId)
+	err := interactor.dataRepository.Store(domains.Entity{interactor.getSlug(), dataSet, metaData, user.DepartementId})
 
 	if err != nil {
 		interactor.logger.Log(err.Error())
